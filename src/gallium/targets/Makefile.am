@@ -46,11 +46,19 @@ if HAVE_GALLIUM_SVGA
 if HAVE_DRI
 SUBDIRS += dri-vmwgfx
 endif
+
+if HAVE_ST_NINE
+SUBDIRS += nine-vmwgfx
+endif
 endif
 
 if HAVE_GALLIUM_FREEDRENO
 if HAVE_DRI
 SUBDIRS += dri-freedreno
+endif
+
+if HAVE_ST_NINE
+SUBDIRS += nine-freedreno
 endif
 endif
 
@@ -58,17 +66,29 @@ if HAVE_GALLIUM_I915
 if HAVE_DRI
 SUBDIRS += dri-i915
 endif
+
+if HAVE_ST_NINE
+SUBDIRS += nine-i915
+endif
 endif
 
 if HAVE_GALLIUM_ILO
 if HAVE_DRI
 SUBDIRS += dri-ilo
 endif
+
+if HAVE_ST_NINE
+SUBDIRS += nine-ilo
+endif
 endif
 
 if HAVE_GALLIUM_R300
 if HAVE_DRI
 SUBDIRS += r300/dri
+endif
+
+if HAVE_ST_NINE
+SUBDIRS += nine-r300
 endif
 endif
 
@@ -87,6 +107,9 @@ endif
 
 if HAVE_ST_OMX
 SUBDIRS += r600/omx
+
+if HAVE_ST_NINE
+SUBDIRS += nine-r600
 endif
 endif
 
@@ -101,6 +124,9 @@ endif
 
 if HAVE_ST_OMX
 SUBDIRS += radeonsi/omx
+
+if HAVE_ST_NINE
+SUBDIRS += nine-radeonsi
 endif
 endif
 
@@ -116,6 +142,10 @@ endif
 if HAVE_ST_VDPAU
 SUBDIRS += vdpau-nouveau
 endif
+
+if HAVE_ST_NINE
+SUBDIRS += nine-nouveau
+endif
 endif
 
 if HAVE_GALLIUM_SOFTPIPE
@@ -130,4 +160,12 @@ endif
 
 if HAVE_GALLIUM_EGL
 SUBDIRS += egl-static
+endif
+
+if HAVE_NINE_XLIB
+SUBDIRS += libd3d9-xlib
+endif
+
+if HAVE_NINE_WINE
+SUBDIRS += libd3d9-wine
 endif
