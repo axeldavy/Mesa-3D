@@ -191,6 +191,8 @@ The integer capabilities:
 * ``PIPE_CAP_BUFFER_MAP_PERSISTENT_COHERENT``: Whether
   PIPE_TRANSFER_PERSISTENT and PIPE_TRANSFER_COHERENT are supported
   for buffers.
+* ``PIPE_CAP_RASTERIZER_LOWER_LEFT_ORIGIN``: Indicates whether the setting of
+  lower_left_origin in pipe_rasterizer_state is supported.
 
 
 .. _pipe_capf:
