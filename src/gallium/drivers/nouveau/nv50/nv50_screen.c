@@ -202,6 +202,8 @@ nv50_screen_get_param(struct pipe_screen *pscreen, enum pipe_cap param)
       return NV50_MAX_VIEWPORTS;
    case PIPE_CAP_MAX_TEXTURE_GATHER_COMPONENTS:
       return (class_3d >= NVA3_3D_CLASS) ? 4 : 0;
+   case PIPE_CAP_DEVICE_MEMORY_SIZE:
+      return nouveau_screen(pscreen)->device->vram_size >> 20;
    default:
       NOUVEAU_ERR("unknown PIPE_CAP %d\n", param);
       return 0;
