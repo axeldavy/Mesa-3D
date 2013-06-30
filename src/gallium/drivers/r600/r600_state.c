@@ -2360,8 +2360,6 @@ void r600_init_atom_start_cs(struct r600_context *rctx)
 		r600_store_value(cb, 0x3F800000); /* R_0282D4_PA_SC_VPORT_ZMAX_0 */
 	}
 
-	r600_store_context_reg(cb, R_028818_PA_CL_VTE_CNTL, 0x43F);
-
 	r600_store_context_reg(cb, R_028200_PA_SC_WINDOW_OFFSET, 0);
 	r600_store_context_reg(cb, R_02820C_PA_SC_CLIPRECT_RULE, 0xFFFF);
 
