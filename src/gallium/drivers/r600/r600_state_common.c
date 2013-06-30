@@ -308,7 +308,6 @@ static void r600_bind_rs_state(struct pipe_context *ctx, void *state)
 {
 	struct r600_rasterizer_state *rs = (struct r600_rasterizer_state *)state;
 	struct r600_context *rctx = (struct r600_context *)ctx;
-	uint32_t clip_cntl = rs->pa_cl_clip_cntl;
 
 	if (state == NULL)
 		return;
@@ -326,10 +325,9 @@ static void r600_bind_rs_state(struct pipe_context *ctx, void *state)
 	}
 
 	/* Update clip_misc_state. */
-	clip_cntl |= rctx->clip_misc_state.pa_cl_clip_cntl & (1 << 16);
-	if (rctx->clip_misc_state.pa_cl_clip_cntl != clip_cntl ||
+	if (rctx->clip_misc_state.pa_cl_clip_cntl != rs->pa_cl_clip_cntl ||
 	    rctx->clip_misc_state.clip_plane_enable != rs->clip_plane_enable) {
-		rctx->clip_misc_state.pa_cl_clip_cntl = clip_cntl;
+		rctx->clip_misc_state.pa_cl_clip_cntl = rs->pa_cl_clip_cntl;
 		rctx->clip_misc_state.clip_plane_enable = rs->clip_plane_enable;
 		rctx->clip_misc_state.atom.dirty = true;
 	}
