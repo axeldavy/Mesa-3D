@@ -1322,7 +1322,8 @@ void r600_emit_clip_misc_state(struct r600_context *rctx, struct r600_atom *atom
 
 	r600_write_context_reg(cs, R_028810_PA_CL_CLIP_CNTL,
 			       state->pa_cl_clip_cntl |
-			       (state->clip_dist_write ? 0 : state->clip_plane_enable & 0x3F));
+			       (state->clip_dist_write ? 0 : state->clip_plane_enable & 0x3F) |
+                               S_028810_CLIP_DISABLE(state->clip_disable));
 	r600_write_context_reg(cs, R_02881C_PA_CL_VS_OUT_CNTL,
 			       state->pa_cl_vs_out_cntl |
 			       (state->clip_plane_enable & state->clip_dist_write));
