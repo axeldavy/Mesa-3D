@@ -1939,7 +1939,7 @@ AM_CONDITIONAL(NEED_GALLIUM_LLVMPIPE_DRIVER, test "x$HAVE_GALLIUM_I915" = xyes -
 #       use by XA tracker in particular, but could be used in any case
 #       where communication with xserver is not desired).
 if test "x$enable_gallium_loader" = xyes; then
-    GALLIUM_WINSYS_DIRS="$GALLIUM_WINSYS_DIRS sw/null"
+    GALLIUM_WINSYS_DIRS="$GALLIUM_WINSYS_DIRS sw/null sw/wrapper"
 
     if test "x$enable_gallium_xlib_loader" = xyes; then
         GALLIUM_WINSYS_DIRS="$GALLIUM_WINSYS_DIRS sw/xlib"
