@@ -1236,11 +1236,14 @@ if test "x$enable_nine" = xyes; then
     fi
 
     GALLIUM_STATE_TRACKERS_DIRS="$GALLIUM_STATE_TRACKERS_DIRS nine"
-    GALLIUM_TARGET_DIRS="$GALLIUM_TARGET_DIRS libd3d9-xlib"
+    GALLIUM_TARGET_DIRS="$GALLIUM_TARGET_DIRS d3dadapter9 libd3d9-xlib"
     if test "x$enable_nine_wine" = xyes; then
         GALLIUM_TARGET_DIRS="$GALLIUM_TARGET_DIRS libd3d9-wine"
         AC_CONFIG_SUBDIRS([src/gallium/targets/libd3d9-wine/autoconf])
     fi
+
+    dnl d3dadapter9 requires pipe-loader
+    enable_gallium_loader=yes
 fi
 AM_CONDITIONAL(HAVE_ST_NINE, test "x$enable_nine" = xyes)
 AM_CONDITIONAL(HAVE_NINE_XLIB, test "x$enable_nine" = xyes)
@@ -2073,6 +2076,7 @@ AC_CONFIG_FILES([Makefile
 		src/gallium/state_trackers/xa/Makefile
 		src/gallium/state_trackers/xvmc/Makefile
 		src/gallium/targets/Makefile
+		src/gallium/targets/d3dadapter9/Makefile
 		src/gallium/targets/dri-freedreno/Makefile
 		src/gallium/targets/dri-i915/Makefile
 		src/gallium/targets/dri-ilo/Makefile
@@ -2098,14 +2102,6 @@ AC_CONFIG_FILES([Makefile
 		src/gallium/targets/libd3d9-wine/Makefile
 		src/gallium/targets/libd3d9-xlib/Makefile
 		src/gallium/targets/libgl-xlib/Makefile
-		src/gallium/targets/nine-freedreno/Makefile
-		src/gallium/targets/nine-i915/Makefile
-		src/gallium/targets/nine-ilo/Makefile
-		src/gallium/targets/nine-nouveau/Makefile
-		src/gallium/targets/nine-r300/Makefile
-		src/gallium/targets/nine-r600/Makefile
-		src/gallium/targets/nine-radeonsi/Makefile
-		src/gallium/targets/nine-vmwgfx/Makefile
 		src/gallium/targets/vdpau-nouveau/Makefile
 		src/gallium/targets/xvmc-nouveau/Makefile
 		src/gallium/tests/trivial/Makefile
