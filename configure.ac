@@ -1493,13 +1493,6 @@ AC_ARG_WITH([egl-driver-dir],
     [EGL_DRIVER_INSTALL_DIR='${libdir}/egl'])
 AC_SUBST([EGL_DRIVER_INSTALL_DIR])
 
-AC_ARG_WITH([nine-driver-dir],
-    [AS_HELP_STRING([--with-nine-driver-dir=DIR],
-                    [Directory for d3d9 drivers [[default=${libdir}/nine]]])],
-    [NINE_DRIVER_INSTALL_DIR="$withval"],
-    [NINE_DRIVER_INSTALL_DIR='${libdir}/nine'])
-AC_SUBST([NINE_DRIVER_INSTALL_DIR])
-
 AC_ARG_WITH([max-width],
     [AS_HELP_STRING([--with-max-width=N],
                     [Maximum framebuffer width (4096)])],
