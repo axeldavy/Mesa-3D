@@ -58,6 +58,7 @@ NineResource9_ctor( struct NineResource9 *This,
             return D3DERR_OUTOFVIDEOMEMORY;
     }
 
+    This->data = NULL;
     This->type = Type;
     This->pool = Pool;
     This->priority = 0;
