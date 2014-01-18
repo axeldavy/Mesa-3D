@@ -916,10 +916,11 @@ create_zs_or_rt_surface(struct NineDevice9 *This,
         d3dformat_to_string(Format), MultiSample, MultisampleQuality,
         Discard_or_Lockable, ppSurface, pSharedHandle);
 
-    assert(!pSharedHandle);
-    user_assert(Width && Height, D3DERR_INVALIDCALL);
+    if (pSharedHandle)
+      DBG("FIXME Used shared handle! This option isn't probably handled correctly!\n");
 
-    assert(Pool != D3DPOOL_MANAGED);
+    user_assert(Width && Height, D3DERR_INVALIDCALL);
+    user_assert(Pool != D3DPOOL_MANAGED, D3DERR_INVALIDCALL);
 
     templ.target = PIPE_TEXTURE_2D;
     templ.format = d3d9_to_pipe_format(Format);
