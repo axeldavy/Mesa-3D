@@ -1439,6 +1439,8 @@ NineDevice9_CreateOffscreenPlainSurface( struct NineDevice9 *This,
         Width, Height, d3dformat_to_string(Format), Format, Pool,
         ppSurface, pSharedHandle);
 
+    user_assert(!pSharedHandle || Pool == D3DPOOL_DEFAULT
+                               || Pool == D3DPOOL_SYSTEMMEM, D3DERR_INVALIDCALL);
     user_assert(Pool != D3DPOOL_MANAGED, D3DERR_INVALIDCALL);
 
     /* Can be used with StretchRect and ColorFill. It's also always lockable.
