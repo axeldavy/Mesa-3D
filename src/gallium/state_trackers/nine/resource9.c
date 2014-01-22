@@ -58,7 +58,7 @@ NineResource9_ctor( struct NineResource9 *This,
             return D3DERR_OUTOFVIDEOMEMORY;
     }
 
-    This->data = NULL;
+    This->data = NULL; /* FIXME remove, rather set it to null in surface9.c*/
     This->type = Type;
     This->pool = Pool;
     This->priority = 0;

@@ -836,6 +836,8 @@ NineDevice9_CreateVertexBuffer( struct NineDevice9 *This,
     DBG("This=%p Length=%u Usage=%x FVF=%x Pool=%u ppOut=%p pSharedHandle=%p\n",
         This, Length, Usage, FVF, Pool, ppVertexBuffer, pSharedHandle);
 
+    user_assert(!pSharedHandle || Pool == D3DPOOL_DEFAULT, D3DERR_NOTAVAILABLE);
+
     desc.Format = D3DFMT_VERTEXDATA;
     desc.Type = D3DRTYPE_VERTEXBUFFER;
     desc.Usage = Usage &
@@ -872,6 +874,8 @@ NineDevice9_CreateIndexBuffer( struct NineDevice9 *This,
     DBG("This=%p Length=%u Usage=%x Format=%s Pool=%u ppOut=%p "
         "pSharedHandle=%p\n", This, Length, Usage,
         d3dformat_to_string(Format), Pool, ppIndexBuffer, pSharedHandle);
+
+    user_assert(!pSharedHandle || Pool == D3DPOOL_DEFAULT, D3DERR_NOTAVAILABLE);
 
     desc.Format = Format;
     desc.Type = D3DRTYPE_INDEXBUFFER;
