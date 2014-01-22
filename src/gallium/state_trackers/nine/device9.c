@@ -24,6 +24,7 @@
 #include "stateblock9.h"
 #include "surface9.h"
 #include "swapchain9.h"
+#include "swapchain9ex.h"
 #include "indexbuffer9.h"
 #include "vertexbuffer9.h"
 #include "vertexdeclaration9.h"
@@ -175,9 +176,19 @@ NineDevice9_ctor( struct NineDevice9 *This,
         if (FAILED(hr))
             return hr;
 
-        hr = NineSwapChain9_new(This, TRUE, present, pCTX,
-                                This->params.hFocusWindow,
-                                &This->swapchains[i]);
+        if (This->ex) {
+            struct NineSwapChain9Ex **ret =
+                (struct NineSwapChain9Ex **)&This->swapchains[i];
+
+            /* when this is a Device9Ex, it should create SwapChain9Exs */
+            hr = NineSwapChain9Ex_new(This, TRUE, present, pCTX,
+                                      This->params.hFocusWindow, ret);
+        } else {
+            hr = NineSwapChain9_new(This, TRUE, present, pCTX,
+                                    This->params.hFocusWindow,
+                                    &This->swapchains[i]);
+        }
+
         ID3DPresent_Release(present);
         if (FAILED(hr))
             return hr;
