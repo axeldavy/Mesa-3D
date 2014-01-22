@@ -21,8 +21,29 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "swapchain9ex.h"
+#include "device9.h"
+
+#include "nine_helpers.h"
 
 #define DBG_CHANNEL DBG_SWAPCHAIN
+
+static HRESULT
+NineSwapChain9Ex_ctor( struct NineSwapChain9Ex *This,
+                       struct NineUnknownParams *pParams,
+                       BOOL implicit,
+                       ID3DPresent *pPresent,
+                       struct d3dadapter9_context *pCTX,
+                       HWND hFocusWindow )
+{
+    return NineSwapChain9_ctor(&This->base, pParams,
+                               implicit, pPresent, pCTX, hFocusWindow);
+}
+
+static void
+NineSwapChain9Ex_dtor( struct NineSwapChain9Ex *This )
+{
+    NineSwapChain9_dtor(&This->base);
+}
 
 HRESULT WINAPI
 NineSwapChain9Ex_GetLastPresentCount( struct NineSwapChain9Ex *This,
@@ -61,3 +82,22 @@ IDirect3DSwapChain9ExVtbl NineSwapChain9Ex_vtable = {
     (void *)NineSwapChain9Ex_GetPresentStats,
     (void *)NineSwapChain9Ex_GetDisplayModeEx
 };
+
+static const GUID *NineSwapChain9Ex_IIDs[] = {
+    &IID_IDirect3DSwapChain9Ex,
+    &IID_IDirect3DSwapChain9,
+    &IID_IUnknown,
+    NULL
+};
+
+HRESULT
+NineSwapChain9Ex_new( struct NineDevice9 *pDevice,
+                      BOOL implicit,
+                      ID3DPresent *pPresent,
+                      struct d3dadapter9_context *pCTX,
+                      HWND hFocusWindow,
+                      struct NineSwapChain9Ex **ppOut )
+{
+    NINE_DEVICE_CHILD_NEW(SwapChain9Ex, ppOut, pDevice, /* args */
+                          implicit, pPresent, pCTX, hFocusWindow);
+}

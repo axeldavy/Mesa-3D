@@ -35,6 +35,14 @@ NineSwapChain9Ex( void *data )
     return (struct NineSwapChain9Ex *)data;
 }
 
+HRESULT
+NineSwapChain9Ex_new( struct NineDevice9 *pDevice,
+                      BOOL implicit,
+                      ID3DPresent *pPresent,
+                      struct d3dadapter9_context *pCTX,
+                      HWND hFocusWindow,
+                      struct NineSwapChain9Ex **ppOut );
+
 HRESULT WINAPI
 NineSwapChain9Ex_GetLastPresentCount( struct NineSwapChain9Ex *This,
                                       UINT *pLastPresentCount );
