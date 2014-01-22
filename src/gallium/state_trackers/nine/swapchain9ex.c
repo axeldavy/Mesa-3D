@@ -64,7 +64,12 @@ NineSwapChain9Ex_GetDisplayModeEx( struct NineSwapChain9Ex *This,
                                    D3DDISPLAYMODEEX *pMode,
                                    D3DDISPLAYROTATION *pRotation )
 {
-    STUB(D3DERR_INVALIDCALL);
+    D3DDISPLAYROTATION rot;
+
+    user_assert(pMode != NULL, E_POINTER);
+    if (!pRotation) { pRotation = &rot; }
+
+    return ID3DPresent_GetDisplayMode(This->base.present, pMode, pRotation);
 }
 
 IDirect3DSwapChain9ExVtbl NineSwapChain9Ex_vtable = {

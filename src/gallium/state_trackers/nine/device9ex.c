@@ -21,6 +21,8 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #include "device9ex.h"
+#include "swapchain9ex.h"
+
 #include "nine_helpers.h"
 
 #define DBG_CHANNEL DBG_DEVICE
@@ -190,7 +192,12 @@ NineDevice9Ex_GetDisplayModeEx( struct NineDevice9Ex *This,
                                 D3DDISPLAYMODEEX *pMode,
                                 D3DDISPLAYROTATION *pRotation )
 {
-    STUB(D3DERR_INVALIDCALL);
+    struct NineSwapChain9Ex *swapchain;
+
+    user_assert(iSwapChain < This->base.nswapchains, D3DERR_INVALIDCALL);
+
+    swapchain = NineSwapChain9Ex(This->base.swapchains[iSwapChain]);
+    return NineSwapChain9Ex_GetDisplayModeEx(swapchain, pMode, pRotation);
 }
 
 IDirect3DDevice9ExVtbl NineDevice9Ex_vtable = {
