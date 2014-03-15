@@ -119,6 +119,8 @@ pipe_loader_sw_probe_xlib(struct pipe_loader_device **devs, Display *display);
 
 #endif
 
+#ifdef HAVE_PIPE_LOADER_DRI
+
 /**
  * Initialize sw dri device give the drisw_loader_funcs.
  *
@@ -130,6 +132,7 @@ bool
 pipe_loader_sw_probe_dri(struct pipe_loader_device **devs,
                          struct drisw_loader_funcs *drisw_lf);
 
+#endif
 
 /**
  * Initialize a null sw device.
