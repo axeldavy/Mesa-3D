@@ -65,7 +65,7 @@ NineVertexBuffer9_ctor( struct NineVertexBuffer9 *This,
     if (!(pDesc->Usage & D3DUSAGE_WRITEONLY))
         info->bind |= PIPE_BIND_TRANSFER_READ;
 
-    info->usage = PIPE_USAGE_STATIC;
+    info->usage = PIPE_USAGE_DEFAULT;
     if (pDesc->Usage & D3DUSAGE_DYNAMIC)
         info->usage = PIPE_USAGE_STREAM;
     if (pDesc->Pool == D3DPOOL_SYSTEMMEM)

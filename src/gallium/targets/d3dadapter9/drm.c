@@ -143,16 +143,7 @@ drm_destroy( struct d3dadapter9_context *ctx )
 {
     struct d3dadapter9drm_context *drm = (struct d3dadapter9drm_context *)ctx;
 
-    if (ctx->ref) {
-        if (ctx->ref->destroy) {
-            ctx->ref->destroy(ctx->ref);
-        } else if (ctx->hal->destroy) {
-            ctx->hal->destroy(ctx->hal);
-        }
-    } else if (ctx->hal) {
-        if (ctx->hal->destroy) { ctx->hal->destroy(ctx->hal); }
-    }
-
+    /* pipe_loader_sw destroys the context */
     if (drm->swdev) { pipe_loader_release(&drm->swdev, 1); }
     pipe_loader_release(&drm->dev, 1);
     
@@ -321,7 +312,7 @@ drm_create_adapter( int fd,
     ctx->base.destroy = drm_destroy;
 
     /* use pipe-loader to dlopen appropriate drm driver */
-    if (!pipe_loader_drm_probe_fd(&ctx->dev, fd)) {
+    if (!pipe_loader_drm_probe_fd(&ctx->dev, fd, FALSE)) {
         DBG("Failed to probe drm fd %d.\n", fd);
         FREE(ctx);
         close(fd);

@@ -925,7 +925,7 @@ create_zs_or_rt_surface(struct NineDevice9 *This,
     templ.array_size = 1;
     templ.last_level = 0;
     templ.nr_samples = (unsigned)MultiSample;
-    templ.usage = PIPE_USAGE_STATIC;
+    templ.usage = PIPE_USAGE_DEFAULT;
     templ.flags = 0;
     templ.bind = PIPE_BIND_SAMPLER_VIEW; /* StretchRect */
     switch (type) {
