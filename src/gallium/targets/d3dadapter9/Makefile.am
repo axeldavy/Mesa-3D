@@ -55,6 +55,11 @@ if HAVE_DRM_LOADER_GALLIUM
 libd3dadapter9_la_SOURCES += drm.c
 endif
 
+if HAVE_DRI
+libd3dadapter9_la_LIBADD += \
+	$(top_builddir)/src/gallium/winsys/sw/dri/libswdri.la
+endif
+
 d3dadapterdir = $(includedir)/d3dadapter
 d3dadapter_HEADERS = \
 	$(top_srcdir)/include/d3dadapter/d3dadapter9.h \
