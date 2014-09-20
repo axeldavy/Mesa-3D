@@ -52,7 +52,7 @@ typedef struct ID3DPresentVtbl
     HRESULT (WINAPI *GetPresentParameters)(ID3DPresent *This, D3DPRESENT_PARAMETERS *pPresentationParameters);
     /* Make a buffer visible to the window system via dma-buf fd.
      * For better compatibility, it must be 32bpp and format ARGB/XRGB */
-    HRESULT (WINAPI *NewBuffer)(ID3DPresent *This, int dmaBufFd, int width, int height, int bpp, D3DWindowBuffer **out);
+    HRESULT (WINAPI *NewBuffer)(ID3DPresent *This, int dmaBufFd, int width, int height, int stride, int depth, int bpp, D3DWindowBuffer **out);
     HRESULT (WINAPI *DestroyBuffer)(ID3DPresent *This, D3DWindowBuffer *buffer);
     /* After presenting a buffer to the window system, the buffer
      * may be used as is (no copy of the content) by the window system.
@@ -62,11 +62,9 @@ typedef struct ID3DPresentVtbl
     HRESULT (WINAPI *WaitOneBufferReleased)(ID3DPresent *This);
     /* TODO: see how to handle the case the FrontBuffer has different size */
     HRESULT (WINAPI *FrontBufferCopy)(ID3DPresent *This, D3DWindowBuffer *buffer);
-    /* In particular if having only one back buffer, you must enforce a copy to be sure
-     * the buffer is going to stay released (note: will be handled by the backend).
-     * It is possible to do partial copy, but impossible to do resizing, which must
+    /* It is possible to do partial copy, but impossible to do resizing, which must
      * be done by the client after checking the front buffer size */
-    HRESULT (WINAPI *PresentBuffer)(ID3DPresent *This, D3DWindowBuffer *buffer, HWND hWndOverride, const RECT *pSourceRect, const RECT *pDestRect, const RECT *pDirtyRegion);
+    HRESULT (WINAPI *PresentBuffer)(ID3DPresent *This, D3DWindowBuffer *buffer, HWND hWndOverride, const RECT *pSourceRect, const RECT *pDestRect, RGNDATA *pDirtyRegion, DWORD Flags);
     HRESULT (WINAPI *GetRasterStatus)(ID3DPresent *This, D3DRASTER_STATUS *pRasterStatus);
     HRESULT (WINAPI *GetDisplayMode)(ID3DPresent *This, D3DDISPLAYMODEEX *pMode, D3DDISPLAYROTATION *pRotation);
     HRESULT (WINAPI *GetPresentStats)(ID3DPresent *This, D3DPRESENTSTATS *pStats);

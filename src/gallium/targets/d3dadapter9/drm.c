@@ -58,86 +58,6 @@ struct d3dadapter9drm_context
     struct pipe_loader_device *dev, *swdev;
 };
 
-static INLINE enum pipe_format
-choose_format( struct pipe_screen *screen,
-               unsigned cpp )
-{
-    int i, count = 0;
-    enum pipe_format formats[4];
-
-    switch (cpp) {
-    case 4:
-        formats[count++] = PIPE_FORMAT_B8G8R8A8_UNORM;
-        formats[count++] = PIPE_FORMAT_A8R8G8B8_UNORM;
-        break;
-    case 3:
-        formats[count++] = PIPE_FORMAT_B8G8R8X8_UNORM;
-        formats[count++] = PIPE_FORMAT_X8R8G8B8_UNORM;
-        formats[count++] = PIPE_FORMAT_B8G8R8A8_UNORM;
-        formats[count++] = PIPE_FORMAT_A8R8G8B8_UNORM;
-        break;
-    case 2:
-        formats[count++] = PIPE_FORMAT_B5G6R5_UNORM;
-        break;
-    default:
-        break;
-    }
-    for (i = 0; i < count; ++i) {
-        if (screen->is_format_supported(screen, formats[i], PIPE_TEXTURE_2D, 0,
-                                        PIPE_BIND_RENDER_TARGET)) {
-            return formats[i];
-        }
-    }
-    return PIPE_FORMAT_NONE;
-}
-
-static HRESULT
-drm_resource_from_present( struct d3dadapter9_context *ctx,
-                           struct pipe_screen *screen,
-                           ID3DPresent *present,
-                           HWND ovr,
-                           const RECT *dest,
-                           RECT *rect,
-                           RGNDATA **rgn,
-                           struct pipe_resource **res_out )
-{
-    struct pipe_resource templ;
-    struct winsys_handle handle;
-    D3DDRM_BUFFER drmbuf;
-    HRESULT hr;
-
-    /* get a real backbuffer handle from the windowing system */
-    hr = ID3DPresent_GetBuffer(present, ovr, &drmbuf, dest, rect, rgn);
-    if (FAILED(hr)) {
-        DBG("Unable to get presentation backend display buffer.\n");
-        return hr;
-    } else if (hr == D3DOK_WINDOW_OCCLUDED) {
-        return hr;
-    }
-
-    handle.type = DRM_API_HANDLE_TYPE_SHARED;
-    handle.handle = drmbuf.iName;
-    handle.stride = drmbuf.dwStride;
-
-    memset(&templ, 0, sizeof(templ));
-    templ.target = PIPE_TEXTURE_2D;
-    templ.last_level = 0;
-    templ.width0 = drmbuf.dwWidth;
-    templ.height0 = drmbuf.dwHeight;
-    templ.depth0 = 1;
-    templ.array_size = 1;
-    templ.format = choose_format(screen, drmbuf.dwCPP);
-    templ.bind = PIPE_BIND_DISPLAY_TARGET | PIPE_BIND_RENDER_TARGET;
-
-    *res_out = screen->resource_from_handle(screen, &templ, &handle);
-    if (!*res_out) {
-        DBG("Invalid resource obtained from ID3DPresent backend.\n");
-        return D3DERR_DRIVERINTERNALERROR;
-    }
-    
-    return D3D_OK;
-}
-
 static void
 drm_destroy( struct d3dadapter9_context *ctx )
 {
@@ -308,7 +228,6 @@ drm_create_adapter( int fd,
     
     if (!ctx) { return E_OUTOFMEMORY; }
 
-    ctx->base.resource_from_present = drm_resource_from_present;
     ctx->base.destroy = drm_destroy;
 
     /* use pipe-loader to dlopen appropriate drm driver */
