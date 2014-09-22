@@ -122,6 +122,8 @@ struct ID3DPresent
 /* ID3DPresent macros */
 #define ID3DPresent_GetPresentParameters(p,a) (p)->lpVtbl->GetPresentParameters(p,a)
 /* TODO: fill macros */
+#define ID3DPresent_NewBuffer(p,a,b,c,d,e,f,g) (p)->lpVtbl->NewBuffer(p,a,b,c,d,e,f,g)
+#define ID3DPresent_DestroyBuffer(p,a) (p)->lpVtbl->DestroyBuffer(p,a)
 #define ID3DPresent_GetRasterStatus(p,a) (p)->lpVtbl->GetRasterStatus(p,a)
 #define ID3DPresent_GetDisplayMode(p,a,b) (p)->lpVtbl->GetDisplayMode(p,a,b)
 #define ID3DPresent_GetPresentStats(p,a) (p)->lpVtbl->GetPresentStats(p,a)
@@ -129,7 +131,7 @@ struct ID3DPresent
 #define ID3DPresent_SetCursorPos(p,a) (p)->lpVtbl->SetCursorPos(p,a)
 #define ID3DPresent_SetCursor(p,a,b,c) (p)->lpVtbl->SetCursor(p,a,b,c)
 #define ID3DPresent_SetGammaRamp(p,a,b) (p)->lpVtbl->SetGammaRamp(p,a,b)
-#define ID3DPresent_GetWindowRect(p,a,b) (p)->lpVtbl->GetWindowRect(p,a,b)
+#define ID3DPresent_GetWindowSize(p,a,b) (p)->lpVtbl->GetWindowSize(p,a,b)
 
 typedef struct ID3DPresentGroupVtbl
 {

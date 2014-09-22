@@ -20,6 +20,8 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include "loader.h"
+
 #include "adapter9.h"
 
 #include "pipe-loader/pipe_loader.h"
@@ -218,7 +220,7 @@ drm_create_adapter( int fd,
 {
     struct d3dadapter9drm_context *ctx = CALLOC_STRUCT(d3dadapter9drm_context);
     HRESULT hr;
-    int i;
+    int i, different_device;
     
     const char *paths[] = {
         getenv("D3D9_DRIVERS_PATH"),
@@ -229,6 +231,9 @@ drm_create_adapter( int fd,
     if (!ctx) { return E_OUTOFMEMORY; }
 
     ctx->base.destroy = drm_destroy;
+
+    fd = loader_get_user_preferred_fd(fd, &different_device);
+    ctx->base.linear_framebuffer = !!different_device;
 
     /* use pipe-loader to dlopen appropriate drm driver */
     if (!pipe_loader_drm_probe_fd(&ctx->dev, fd, FALSE)) {

@@ -34,6 +34,7 @@ struct d3dadapter9_context
 {
     struct pipe_screen *hal, *ref;
     D3DADAPTER_IDENTIFIER9 identifier;
+    BOOL linear_framebuffer;
 
     void (*destroy)( struct d3dadapter9_context *ctx );
 };
