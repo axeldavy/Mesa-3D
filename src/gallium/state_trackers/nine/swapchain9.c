@@ -65,6 +65,7 @@ NineSwapChain9_ctor( struct NineSwapChain9 *This,
     if (!params.hDeviceWindow)
         params.hDeviceWindow = hFocusWindow;
 
+    This->rendering_done = FALSE;
     return NineSwapChain9_Resize(This, &params);
 }
 
@@ -145,7 +146,8 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
     pf = d3d9_to_pipe_format(pParams->BackBufferFormat);
     if (This->actx->linear_framebuffer ||
         (pf != PIPE_FORMAT_B8G8R8X8_UNORM &&
-        pf != PIPE_FORMAT_B8G8R8A8_UNORM)) { /* TODO when using something else than D3DSWAPEFFECT_DISCARD, then have a present buffer too if needs to draw cursor or hud. Don't forget to add the rendering flag then */
+        pf != PIPE_FORMAT_B8G8R8A8_UNORM) ||
+        params.SwapEffect != D3DSWAPEFFECT_DISCARD) {
         has_present_buffers = TRUE;
         depth = 24;
     } else {
@@ -176,7 +178,7 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
         ID3DPresent_DestroyBuffer(This->present, This->present_handles[i]);
         This->present_handles[i] = NULL;
         if (This->present_buffers)
-            pipe_resource_reference((&This->present_buffers + i * sizeof(pipe_resource)), NULL);
+            pipe_resource_reference((struct pipe_resource **)(&This->present_buffers + i * sizeof(struct pipe_resource *)), NULL);
     }
 
     if (!has_present_buffers && This->present_buffers) {
@@ -196,8 +198,8 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
         This->buffers = bufs;
         if (has_present_buffers)
             This->present_buffers = REALLOC(This->present_buffers,
-                                            This->present_buffers == NULL ? 0 : oldBufferCount * sizeof(pipe_resource),
-                                            newBufferCount * sizeof(pipe_resource));
+                                            This->present_buffers == NULL ? 0 : oldBufferCount * sizeof(struct pipe_resource *),
+                                            newBufferCount * sizeof(struct pipe_resource *));
         This->present_handles = REALLOC(This->present_handles,
                                         oldBufferCount * sizeof(D3DWindowBuffer *),
                                         newBufferCount * sizeof(D3DWindowBuffer *));
@@ -205,7 +207,7 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
             This->buffers[i] = NULL;
             This->present_handles[i] = NULL;
         }
-        memset(&This->present_buffers, 0, newBufferCount * sizeof(pipe_resource));
+        memset(&This->present_buffers, 0, newBufferCount * sizeof(struct pipe_resource *));
     }
 
     for (i = 0; i < newBufferCount; ++i) {
@@ -243,8 +245,10 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
             tmplt.bind = PIPE_BIND_SAMPLER_VIEW | PIPE_BIND_SHARED | PIPE_BIND_SCANOUT;
             if (This->actx->linear_framebuffer)
                 tmplt.bind |= PIPE_BIND_LINEAR;
+            if (params.SwapEffect != D3DSWAPEFFECT_DISCARD)
+                tmplt.bind |= PIPE_BIND_RENDER_TARGET;
             resource = This->screen->resource_create(This->screen, &tmplt);
-            pipe_resource_reference((&This->present_buffers + i * sizeof(pipe_resource)), resource);
+            pipe_resource_reference((struct pipe_resource **)(&This->present_buffers + i * sizeof(struct pipe_resource *)), resource);
         }
         memset(&whandle, 0, sizeof(whandle));
         whandle.type = DRM_API_HANDLE_TYPE_FD;
@@ -308,7 +312,7 @@ NineSwapChain9_dtor( struct NineSwapChain9 *This )
             NineUnknown_Destroy(NineUnknown(This->buffers[i]));
             ID3DPresent_DestroyBuffer(This->present, This->present_handles[i]);
             if (This->present_buffers)
-                pipe_resource_reference((&This->present_buffers + i * sizeof(pipe_resource)), NULL);
+                pipe_resource_reference((struct pipe_resource **)(&This->present_buffers + i * sizeof(struct pipe_resource *)), NULL);
         }
         FREE(This->buffers);
         FREE(This->present_buffers);
@@ -320,6 +324,56 @@ NineSwapChain9_dtor( struct NineSwapChain9 *This )
         ID3DPresent_Release(This->present);
 
     NineUnknown_dtor(&This->base);
+}
+
+static void handle_draw_cursor_and_hud( struct NineSwapChain9 *This, pipe_resource *resource, int resource_level )
+{
+    struct NineDevice9 *device = This->base.device;
+    struct pipe_blit_info blit;
+
+     if (device->cursor.software && device->cursor.visible && device->cursor.w) {
+        blit.src.resource = device->cursor.image;
+        blit.src.level = 0;
+        blit.src.format = device->cursor.image->format;
+        blit.src.box.x = 0;
+        blit.src.box.y = 0;
+        blit.src.box.z = 0;
+        blit.src.box.depth = 1;
+        blit.src.box.width = device->cursor.w;
+        blit.src.box.height = device->cursor.h;
+
+        blit.dst.resource = resource;
+        blit.dst.level = resource_level;
+        blit.dst.format = resource->format;
+        blit.dst.box.z = 0;
+        blit.dst.box.depth = 1;
+
+        blit.mask = PIPE_MASK_RGBA;
+        blit.filter = PIPE_TEX_FILTER_NEAREST;
+        blit.scissor_enable = FALSE;
+        blit.alpha_blend = FALSE;
+
+        ID3DPresent_GetCursorPos(This->present, &device->cursor.pos);
+
+        /* NOTE: blit messes up when box.x + box.width < 0, fix driver */
+        blit.dst.box.x = MAX2(device->cursor.pos.x, 0) - device->cursor.hotspot.x;
+        blit.dst.box.y = MAX2(device->cursor.pos.y, 0) - device->cursor.hotspot.y;
+        blit.dst.box.width = blit.src.box.width;
+        blit.dst.box.height = blit.src.box.height;
+
+        DBG("Blitting cursor(%ux%u) to (%i,%i).\n",
+            blit.src.box.width, blit.src.box.height,
+            blit.dst.box.x, blit.dst.box.y);
+
+        blit.alpha_blend = TRUE;
+        This->pipe->blit(This->pipe, &blit);
+    }
+
+    if (device->hud && resource) {
+        hud_draw(device->hud, resource); /* XXX: no offset */
+        /* HUD doesn't clobber stipple */
+        NineDevice9_RestoreNonCSOState(device, ~0x2);
+    }
 }
 
 static INLINE HRESULT
@@ -357,44 +411,49 @@ present( struct NineSwapChain9 *This,
      * from the source size, and the destination window size.
      * In this case, either resize rngdata, or pass NULL instead
      */
-        
-    /* TODO: if no rezising blit the content of the buffers[0] to the present_buffers[0] if it exists*/
+    /* TODO: This->buffers[0]->level != 0 will always need a copy */
 
-    /* TODO: draw the hud on the correct destination: present_buffers[0] if it is renderable and exists,
-     * else buffers[0], or if exists, the buffer created for the resizing. */
-    /* TODO similar things for the cursor */
-    /* TODO: depending on if we have present_buffers and is renderable or not, the operations will have different order */
-    if (device->cursor.software && device->cursor.visible && device->cursor.w &&
-        blit.dst.resource) {
-        blit.src.resource = device->cursor.image;
-        blit.src.level = 0;
-        blit.src.format = device->cursor.image->format;
+    if (This->rendering_done)
+        goto bypass_rendering;
+
+    resource = This->buffers[0]->base.resource;
+    if (params.SwapEffect == D3DSWAPEFFECT_DISCARD)
+        handle_draw_cursor_and_hud(This, resource, This->buffers[0]->level);
+
+    if (This->present_buffers) {
+        blit.src.resource = resource;
+        blit.src.level = This->buffers[0]->level;
+        blit.src.format = resource->format;
+        blit.src.box.z = 0;
+        blit.src.box.depth = 1;
         blit.src.box.x = 0;
         blit.src.box.y = 0;
-        blit.src.box.width = device->cursor.w;
-        blit.src.box.height = device->cursor.h;
+        blit.src.box.width = resource->width0;
+        blit.src.box.height = resource->height0;
 
-        ID3DPresent_GetCursorPos(This->present, &device->cursor.pos);
+        resource = This->present_buffers[0];
 
-        /* NOTE: blit messes up when box.x + box.width < 0, fix driver */
-        blit.dst.box.x = MAX2(device->cursor.pos.x, 0) - device->cursor.hotspot.x;
-        blit.dst.box.y = MAX2(device->cursor.pos.y, 0) - device->cursor.hotspot.y;
-        blit.dst.box.width = blit.src.box.width;
-        blit.dst.box.height = blit.src.box.height;
+        blit.dst.resource = resource;
+        blit.dst.level = 0;
+        blit.dst.format = resource->format;
+        blit.dst.box.z = 0;
+        blit.dst.box.depth = 1;
+        blit.dst.box.x = 0;
+        blit.dst.box.y = 0;
+        blit.dst.box.width = resource->width0;
+        blit.dst.box.height = resource->height0;
 
-        DBG("Blitting cursor(%ux%u) to (%i,%i).\n",
-            blit.src.box.width, blit.src.box.height,
-            blit.dst.box.x, blit.dst.box.y);
+        blit.mask = PIPE_MASK_RGBA;
+        blit.filter = PIPE_TEX_FILTER_NEAREST;
+        blit.scissor_enable = FALSE;
+        blit.alpha_blend = FALSE;
 
-        blit.alpha_blend = TRUE;
         This->pipe->blit(This->pipe, &blit);
     }
 
-    if (device->hud && resource) {
-        hud_draw(device->hud, resource); /* XXX: no offset */
-        /* HUD doesn't clobber stipple */
-        NineDevice9_RestoreNonCSOState(device, ~0x2);
-    }
+    if (params.SwapEffect != D3DSWAPEFFECT_DISCARD)
+        handle_draw_cursor_and_hud(This, resource, 0);
+
 
     This->pipe->flush(This->pipe, NULL, PIPE_FLUSH_END_OF_FRAME);
 
@@ -406,10 +465,13 @@ present( struct NineSwapChain9 *This,
      * We'll have to write a mechanism to not do the copies again if we call again Present in this case.
      * Note that the following Present call can also return that, and we'll have to care about that.
     /* really present the frame */
-    /* TODO: call with the correct arguments */
-    hr = ID3DPresent_Present(This->present, dwFlags);
-    pipe_resource_reference(&resource, NULL);
+    This->rendering_done = TRUE;
+bypass_rendering:
+    hr = ID3DPresent_Present(This->present, This->present_handles[0], hDestWindowOverride, pSourceRect, pDestRect, pDirtyRegion, dwFlags);
+
     if (FAILED(hr)) { return hr; }
+
+    This->rendering_done = FALSE;
 
     return D3D_OK;
 }
@@ -423,9 +485,13 @@ NineSwapChain9_Present( struct NineSwapChain9 *This,
                         DWORD dwFlags )
 {
     struct pipe_resource *res = NULL;
+    D3DWindowBuffer *handle_temp;
     int i;
     HRESULT hr = present(This, pSourceRect, pDestRect,
                          hDestWindowOverride, pDirtyRegion, dwFlags);
+
+    if (hr == D3DERR_WASSTILLDRAWING)
+        return hr;
 
     switch (This->params.SwapEffect) {
         case D3DSWAPEFFECT_DISCARD:
@@ -439,6 +505,20 @@ NineSwapChain9_Present( struct NineSwapChain9 *This,
             NineSurface9_SetResourceResize(
                 This->buffers[This->params.BackBufferCount], res);
             pipe_resource_reference(&res, NULL);
+
+            if (This->present_buffers) {
+                pipe_resource_reference(&res, This->present_buffers[0]);
+                for (i = 1; i <= This->params.BackBufferCount; i++)
+                    pipe_resource_reference((struct pipe_resource **)(&This->present_buffers + (i-1) * sizeof(struct pipe_resource *)), This->present_buffers[i]);
+                pipe_resource_reference((struct pipe_resource **)(&This->present_buffers + This->params.BackBufferCount * sizeof(struct pipe_resource *)), res);
+                pipe_resource_reference(&res, NULL);
+            }
+
+            handle_temp = This->present_handles[0];
+            for (i = 1; i <= This->params.BackBufferCount; i++) {
+                This->present_handles[i-1] = This->present_handles[i];
+            }
+            This->present_handles[This->params.BackBufferCount] = handle_temp;
             break;
 
         case D3DSWAPEFFECT_COPY:

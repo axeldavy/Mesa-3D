@@ -124,6 +124,7 @@ struct ID3DPresent
 /* TODO: fill macros */
 #define ID3DPresent_NewBuffer(p,a,b,c,d,e,f,g) (p)->lpVtbl->NewBuffer(p,a,b,c,d,e,f,g)
 #define ID3DPresent_DestroyBuffer(p,a) (p)->lpVtbl->DestroyBuffer(p,a)
+#define ID3DPresent_PresentBuffer(p,a,b,c,d,e,f) (p)->lpVtbl->PresentBuffer(p,a,b,c,d,e,f)
 #define ID3DPresent_GetRasterStatus(p,a) (p)->lpVtbl->GetRasterStatus(p,a)
 #define ID3DPresent_GetDisplayMode(p,a,b) (p)->lpVtbl->GetDisplayMode(p,a,b)
 #define ID3DPresent_GetPresentStats(p,a) (p)->lpVtbl->GetPresentStats(p,a)
