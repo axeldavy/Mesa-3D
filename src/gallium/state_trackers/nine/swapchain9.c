@@ -128,7 +128,7 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
         pParams->BackBufferCount = 1; /* ref MSDN */
 
     oldBufferCount = This->params.BackBufferCount ? This->params.BackBufferCount + (This->params.SwapEffect != D3DSWAPEFFECT_COPY) : 0;
-    newBufferCount = pParams->BackBufferCount + (params.SwapEffect != D3DSWAPEFFECT_COPY);
+    newBufferCount = pParams->BackBufferCount + (This->params.SwapEffect != D3DSWAPEFFECT_COPY);
 
     if (pParams->BackBufferWidth == 0 || pParams->BackBufferHeight == 0) {
         int width, height;

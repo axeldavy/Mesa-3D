@@ -64,7 +64,7 @@ typedef struct ID3DPresentVtbl
     HRESULT (WINAPI *FrontBufferCopy)(ID3DPresent *This, D3DWindowBuffer *buffer);
     /* It is possible to do partial copy, but impossible to do resizing, which must
      * be done by the client after checking the front buffer size */
-    HRESULT (WINAPI *PresentBuffer)(ID3DPresent *This, D3DWindowBuffer *buffer, HWND hWndOverride, const RECT *pSourceRect, const RECT *pDestRect, RGNDATA *pDirtyRegion, DWORD Flags);
+    HRESULT (WINAPI *PresentBuffer)(ID3DPresent *This, D3DWindowBuffer *buffer, HWND hWndOverride, const RECT *pSourceRect, const RECT *pDestRect, const RGNDATA *pDirtyRegion, DWORD Flags);
     HRESULT (WINAPI *GetRasterStatus)(ID3DPresent *This, D3DRASTER_STATUS *pRasterStatus);
     HRESULT (WINAPI *GetDisplayMode)(ID3DPresent *This, D3DDISPLAYMODEEX *pMode, D3DDISPLAYROTATION *pRotation);
     HRESULT (WINAPI *GetPresentStats)(ID3DPresent *This, D3DPRESENTSTATS *pStats);
@@ -132,7 +132,7 @@ struct ID3DPresent
 #define ID3DPresent_SetCursorPos(p,a) (p)->lpVtbl->SetCursorPos(p,a)
 #define ID3DPresent_SetCursor(p,a,b,c) (p)->lpVtbl->SetCursor(p,a,b,c)
 #define ID3DPresent_SetGammaRamp(p,a,b) (p)->lpVtbl->SetGammaRamp(p,a,b)
-#define ID3DPresent_GetWindowSize(p,a,b) (p)->lpVtbl->GetWindowSize(p,a,b)
+#define ID3DPresent_GetWindowSize(p,a,b,c) (p)->lpVtbl->GetWindowSize(p,a,b,c)
 
 typedef struct ID3DPresentGroupVtbl
 {

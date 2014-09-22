@@ -1370,22 +1370,6 @@ fi
 AM_CONDITIONAL(HAVE_GALLIUM_GBM, test "x$enable_gallium_gbm" = xyes)
 
 dnl
-dnl Nine Direct3D9 configuration
-dnl
-if test "x$enable_nine" = xyes; then
-    if test "x$with_gallium_drivers" = x; then
-        AC_MSG_ERROR([cannot enable nine without Gallium])
-    fi
-
-    GALLIUM_STATE_TRACKERS_DIRS="$GALLIUM_STATE_TRACKERS_DIRS nine"
-    GALLIUM_TARGET_DIRS="$GALLIUM_TARGET_DIRS d3dadapter9"
-
-    # XXX: Use $enable_shared_pipe_drivers once converted to use static/shared pipe-drivers
-    enable_gallium_loader=yes
-fi
-AM_CONDITIONAL(HAVE_ST_NINE, test "x$enable_nine" = xyes)
-
-dnl
 dnl XA configuration
 dnl
 if test "x$enable_xa" = xyes; then
@@ -1464,6 +1448,22 @@ if test "x$enable_omx" = xyes; then
     enable_gallium_loader=$enable_shared_pipe_drivers
 fi
 AM_CONDITIONAL(HAVE_ST_OMX, test "x$enable_omx" = xyes)
+
+dnl
+dnl Nine Direct3D9 configuration
+dnl
+if test "x$enable_nine" = xyes; then
+    if test "x$with_gallium_drivers" = x; then
+        AC_MSG_ERROR([cannot enable nine without Gallium])
+    fi
+
+    GALLIUM_STATE_TRACKERS_DIRS="$GALLIUM_STATE_TRACKERS_DIRS nine"
+    GALLIUM_TARGET_DIRS="$GALLIUM_TARGET_DIRS d3dadapter9"
+
+    # XXX: Use $enable_shared_pipe_drivers once converted to use static/shared pipe-drivers
+    enable_gallium_loader=yes
+fi
+AM_CONDITIONAL(HAVE_ST_NINE, test "x$enable_nine" = xyes)
 
 dnl
 dnl OpenCL configuration
