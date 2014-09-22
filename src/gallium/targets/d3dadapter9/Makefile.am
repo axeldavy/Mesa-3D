@@ -29,6 +29,7 @@ AM_CFLAGS = \
 	-I$(top_srcdir)/src/gallium/winsys \
 	-I$(top_srcdir)/src/gallium/state_trackers/nine \
 	-I$(top_srcdir)/include/D3D9 \
+	-I$(top_srcdir)/src/loader \
 	-DPIPE_SEARCH_DIR=\"$(GALLIUM_PIPE_LOADER_DIR)\" \
 	$(GALLIUM_PIPE_LOADER_DEFINES)
 
@@ -50,6 +51,7 @@ libd3dadapter9_la_LIBADD = \
 	$(top_builddir)/src/gallium/winsys/sw/wrapper/libwsw.la \
 	$(top_builddir)/src/gallium/winsys/sw/null/libws_null.la \
 	$(top_builddir)/src/util/libmesautil.la \
+	$(top_builddir)/src/loader/libloader.la \
 	$(GALLIUM_PIPE_LOADER_LIBS) \
 	$(LIBUDEV_LIBS) \
 	$(GALLIUM_COMMON_LIB_DEPS)
