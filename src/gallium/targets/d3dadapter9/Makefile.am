@@ -51,7 +51,6 @@ libd3dadapter9_la_LIBADD = \
 	$(top_builddir)/src/gallium/winsys/sw/wrapper/libwsw.la \
 	$(top_builddir)/src/gallium/winsys/sw/null/libws_null.la \
 	$(top_builddir)/src/util/libmesautil.la \
-	$(top_builddir)/src/loader/libloader.la \
 	$(GALLIUM_PIPE_LOADER_LIBS) \
 	$(LIBUDEV_LIBS) \
 	$(GALLIUM_COMMON_LIB_DEPS)
