@@ -148,7 +148,7 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
     if (This->actx->linear_framebuffer ||
         (pf != PIPE_FORMAT_B8G8R8X8_UNORM &&
         pf != PIPE_FORMAT_B8G8R8A8_UNORM) ||
-        params.SwapEffect != D3DSWAPEFFECT_DISCARD) {
+        pParams->SwapEffect != D3DSWAPEFFECT_DISCARD) {
         has_present_buffers = TRUE;
         depth = 24;
     } else {
@@ -246,7 +246,7 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
             tmplt.bind = PIPE_BIND_SAMPLER_VIEW | PIPE_BIND_SHARED | PIPE_BIND_SCANOUT;
             if (This->actx->linear_framebuffer)
                 tmplt.bind |= PIPE_BIND_LINEAR;
-            if (params.SwapEffect != D3DSWAPEFFECT_DISCARD)
+            if (pParams->SwapEffect != D3DSWAPEFFECT_DISCARD)
                 tmplt.bind |= PIPE_BIND_RENDER_TARGET;
             resource = This->screen->resource_create(This->screen, &tmplt);
             pipe_resource_reference((struct pipe_resource **)(&This->present_buffers + i * sizeof(struct pipe_resource *)), resource);
