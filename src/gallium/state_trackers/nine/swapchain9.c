@@ -179,7 +179,7 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
         ID3DPresent_DestroyBuffer(This->present, This->present_handles[i]);
         This->present_handles[i] = NULL;
         if (This->present_buffers)
-            pipe_resource_reference((struct pipe_resource **)(&This->present_buffers + i * sizeof(struct pipe_resource *)), NULL);
+            pipe_resource_reference((struct pipe_resource **)(This->present_buffers + i * sizeof(struct pipe_resource *)), NULL);
     }
 
     if (!has_present_buffers && This->present_buffers) {
@@ -197,10 +197,12 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
         if (!bufs)
             return E_OUTOFMEMORY;
         This->buffers = bufs;
-        if (has_present_buffers)
+        if (has_present_buffers) {
             This->present_buffers = REALLOC(This->present_buffers,
                                             This->present_buffers == NULL ? 0 : oldBufferCount * sizeof(struct pipe_resource *),
                                             newBufferCount * sizeof(struct pipe_resource *));
+            memset(This->present_buffers, 0, newBufferCount * sizeof(struct pipe_resource *));
+        }
         This->present_handles = REALLOC(This->present_handles,
                                         oldBufferCount * sizeof(D3DWindowBuffer *),
                                         newBufferCount * sizeof(D3DWindowBuffer *));
@@ -208,7 +210,6 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
             This->buffers[i] = NULL;
             This->present_handles[i] = NULL;
         }
-        memset(&This->present_buffers, 0, newBufferCount * sizeof(struct pipe_resource *));
     }
 
     for (i = 0; i < newBufferCount; ++i) {
@@ -249,7 +250,7 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
             if (pParams->SwapEffect != D3DSWAPEFFECT_DISCARD)
                 tmplt.bind |= PIPE_BIND_RENDER_TARGET;
             resource = This->screen->resource_create(This->screen, &tmplt);
-            pipe_resource_reference((struct pipe_resource **)(&This->present_buffers + i * sizeof(struct pipe_resource *)), resource);
+            pipe_resource_reference((struct pipe_resource **)(This->present_buffers + i * sizeof(struct pipe_resource *)), resource);
         }
         memset(&whandle, 0, sizeof(whandle));
         whandle.type = DRM_API_HANDLE_TYPE_FD;
@@ -313,7 +314,7 @@ NineSwapChain9_dtor( struct NineSwapChain9 *This )
             NineUnknown_Destroy(NineUnknown(This->buffers[i]));
             ID3DPresent_DestroyBuffer(This->present, This->present_handles[i]);
             if (This->present_buffers)
-                pipe_resource_reference((struct pipe_resource **)(&This->present_buffers + i * sizeof(struct pipe_resource *)), NULL);
+                pipe_resource_reference((struct pipe_resource **)(This->present_buffers + i * sizeof(struct pipe_resource *)), NULL);
         }
         FREE(This->buffers);
         FREE(This->present_buffers);
@@ -506,8 +507,8 @@ NineSwapChain9_Present( struct NineSwapChain9 *This,
             if (This->present_buffers) {
                 pipe_resource_reference(&res, This->present_buffers[0]);
                 for (i = 1; i <= This->params.BackBufferCount; i++)
-                    pipe_resource_reference((struct pipe_resource **)(&This->present_buffers + (i-1) * sizeof(struct pipe_resource *)), This->present_buffers[i]);
-                pipe_resource_reference((struct pipe_resource **)(&This->present_buffers + This->params.BackBufferCount * sizeof(struct pipe_resource *)), res);
+                    pipe_resource_reference((struct pipe_resource **)(This->present_buffers + (i-1) * sizeof(struct pipe_resource *)), This->present_buffers[i]);
+                pipe_resource_reference((struct pipe_resource **)(This->present_buffers + This->params.BackBufferCount * sizeof(struct pipe_resource *)), res);
                 pipe_resource_reference(&res, NULL);
             }
 
