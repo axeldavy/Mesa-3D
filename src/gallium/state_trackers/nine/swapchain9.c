@@ -391,8 +391,8 @@ present( struct NineSwapChain9 *This,
     struct pipe_blit_info blit;
 
     DBG(">>>\npresent: This=%p pSourceRect=%p pDestRect=%p "
-        "pDirtyRegion=%p rgndata=%p\n",
-        This, pSourceRect, pDestRect, pDirtyRegion, rgndata);
+        "pDirtyRegion=%p",
+        This, pSourceRect, pDestRect, pDirtyRegion);
     if (pSourceRect)
         DBG("pSourceRect = (%u..%u)x(%u..%u)\n",
             pSourceRect->left, pSourceRect->right,
