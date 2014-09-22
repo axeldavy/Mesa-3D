@@ -31,6 +31,7 @@
 #include "util/u_inlines.h"
 #include "util/u_surface.h"
 #include "hud/hud_context.h"
+#include "state_tracker/drm_driver.h"
 
 #define DBG_CHANNEL DBG_SWAPCHAIN
 
@@ -214,7 +215,7 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
         tmplt.format = d3d9_to_pipe_format(pParams->BackBufferFormat);
         tmplt.bind = PIPE_BIND_SAMPLER_VIEW | PIPE_BIND_TRANSFER_READ |
                      PIPE_BIND_TRANSFER_WRITE | PIPE_BIND_RENDER_TARGET;
-        if (!This->has_present_buffers)
+        if (!has_present_buffers)
             tmplt.bind |= PIPE_BIND_SHARED | PIPE_BIND_SCANOUT;
         resource = This->screen->resource_create(This->screen, &tmplt);
         if (!resource) {
@@ -225,14 +226,14 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
             resource->flags |= NINE_RESOURCE_FLAG_LOCKABLE;
         if (This->buffers[i]) {
             NineSurface9_SetResourceResize(This->buffers[i], resource);
-            if (This->has_present_buffers)
+            if (has_present_buffers)
                 pipe_resource_reference(&resource, NULL);
         } else {
             desc.Format = pParams->BackBufferFormat;
             desc.Usage = D3DUSAGE_RENDERTARGET;
             hr = NineSurface9_new(pDevice, NineUnknown(This), resource, 0,
                                   0, 0, &desc, &This->buffers[i]);
-            if (This->has_present_buffers)
+            if (has_present_buffers)
                 pipe_resource_reference(&resource, NULL);
             if (FAILED(hr)) {
                 DBG("Failed to create RT surface.\n");
@@ -240,7 +241,7 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
             }
             This->buffers[i]->base.base.forward = FALSE;
         }
-        if (This->has_present_buffers) {
+        if (has_present_buffers) {
             tmplt.format = PIPE_FORMAT_B8G8R8X8_UNORM;
             tmplt.bind = PIPE_BIND_SAMPLER_VIEW | PIPE_BIND_SHARED | PIPE_BIND_SCANOUT;
             if (This->actx->linear_framebuffer)
@@ -264,7 +265,7 @@ NineSwapChain9_Resize( struct NineSwapChain9 *This,
                               32,
                               &(This->present_handles[i])
                               );
-        if (!This->has_present_buffers)
+        if (!has_present_buffers)
             pipe_resource_reference(&resource, NULL);
     }
     if (pParams->EnableAutoDepthStencil) {
@@ -326,7 +327,7 @@ NineSwapChain9_dtor( struct NineSwapChain9 *This )
     NineUnknown_dtor(&This->base);
 }
 
-static void handle_draw_cursor_and_hud( struct NineSwapChain9 *This, pipe_resource *resource, int resource_level )
+static void handle_draw_cursor_and_hud( struct NineSwapChain9 *This, struct pipe_resource *resource, int resource_level )
 {
     struct NineDevice9 *device = This->base.device;
     struct pipe_blit_info blit;
@@ -384,11 +385,8 @@ present( struct NineSwapChain9 *This,
          const RGNDATA *pDirtyRegion,
          DWORD dwFlags )
 {
-    struct NineDevice9 *device = This->base.device;
     struct pipe_resource *resource;
     HRESULT hr;
-    RGNDATA *rgndata;
-    RECT rect;
     struct pipe_blit_info blit;
 
     DBG(">>>\npresent: This=%p pSourceRect=%p pDestRect=%p "
@@ -417,7 +415,7 @@ present( struct NineSwapChain9 *This,
         goto bypass_rendering;
 
     resource = This->buffers[0]->base.resource;
-    if (params.SwapEffect == D3DSWAPEFFECT_DISCARD)
+    if (This->params.SwapEffect == D3DSWAPEFFECT_DISCARD)
         handle_draw_cursor_and_hud(This, resource, This->buffers[0]->level);
 
     if (This->present_buffers) {
@@ -451,7 +449,7 @@ present( struct NineSwapChain9 *This,
         This->pipe->blit(This->pipe, &blit);
     }
 
-    if (params.SwapEffect != D3DSWAPEFFECT_DISCARD)
+    if (This->params.SwapEffect != D3DSWAPEFFECT_DISCARD)
         handle_draw_cursor_and_hud(This, resource, 0);
 
 
@@ -462,12 +460,11 @@ present( struct NineSwapChain9 *This,
      * rendered. This should have the side effect of implementing throttling,
      * which decreases input lag (see dri2 state tracker for an alternative implementation).
      * If the flag D3DPRESENT_DONOTWAIT is set, we have to return D3DERR_WASSTILLDRAWING if we would have to wait.
-     * We'll have to write a mechanism to not do the copies again if we call again Present in this case.
      * Note that the following Present call can also return that, and we'll have to care about that.
     /* really present the frame */
     This->rendering_done = TRUE;
 bypass_rendering:
-    hr = ID3DPresent_Present(This->present, This->present_handles[0], hDestWindowOverride, pSourceRect, pDestRect, pDirtyRegion, dwFlags);
+    hr = ID3DPresent_PresentBuffer(This->present, This->present_handles[0], hDestWindowOverride, pSourceRect, pDestRect, pDirtyRegion, dwFlags);
 
     if (FAILED(hr)) { return hr; }
 
